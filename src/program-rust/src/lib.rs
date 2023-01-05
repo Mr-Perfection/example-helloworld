@@ -127,5 +127,54 @@ mod test {
                 .counter,
             778
         );
+
+        // Decrement
+        let mut instruction_data = [1;5];
+        process_instruction(&program_id, &accounts, &instruction_data).unwrap();
+        assert_eq!(
+            GreetingAccount::try_from_slice(&accounts[0].data.borrow())
+                .unwrap()
+                .counter,
+            777
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_failure_negative_counter() {
+        let program_id = Pubkey::default();
+        let key = Pubkey::default();
+        let mut lamports = 0;
+        let mut data = vec![0; mem::size_of::<u32>()];
+        let owner = Pubkey::default();
+        let account = AccountInfo::new(
+            &key,
+            false,
+            true,
+            &mut lamports,
+            &mut data,
+            &owner,
+            false,
+            Epoch::default(),
+        );
+        // * 0 (first u8):
+        //  * 0 - increment
+        //  * 1 - decrement
+        //  * 2 - set
+        //  * 1-4 (u32 le): instruction_data
+        //  * 
+        //  * [2, 100, 0, 0, 0]
+
+        // Initialize with 1s (DECREMENT command)
+        let mut instruction_data = [1;5];
+        let accounts = vec![account];
+
+        assert_eq!(
+            GreetingAccount::try_from_slice(&accounts[0].data.borrow())
+                .unwrap()
+                .counter,
+            0
+        );
+        process_instruction(&program_id, &accounts, &instruction_data).unwrap();
     }
 }
