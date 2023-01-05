@@ -214,10 +214,10 @@ function createDecrementInstruction(): Buffer {
 function createSetInstruction(): Buffer {
   const layout: BufferLayout.Structure<{ instruction: number, value: number }> = BufferLayout.struct([
     BufferLayout.u8('instruction'),
-    BufferLayout.u8('value')
+    BufferLayout.u32('value')
   ]);
   const data = Buffer.alloc(layout.span);
-  layout.encode({ instruction: 2, value: 100 }, data);
+  layout.encode({ instruction: 2, value: 200 }, data);
   return data;
 }
 
@@ -228,7 +228,7 @@ export async function sayHello(): Promise<void> {
   const instruction = new TransactionInstruction({
     keys: [{pubkey: greetedPubkey, isSigner: false, isWritable: true}],
     programId,
-    data: createIncrementInstruction(), // All instructions are hellos
+    data: createSetInstruction(), // All instructions are hellos
   });
   await sendAndConfirmTransaction(
     connection,
